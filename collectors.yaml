@@ -1,0 +1,50 @@
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: collectors
+  labels:
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/tags: release
+spec:
+  description: >-
+    Tekton pipeline to execute the collectors defined in the releasePlan and releasePlanAdmission. The pipeline will
+    save the required resources to the workspace, execute the collectors, then update the Release.Status with the
+    results.
+  params:
+    - name: release
+      type: string
+      description:
+        The namespaced name (namespace/name) of the Release custom resource initiating this pipeline execution
+    - name: previousRelease
+      type: string
+      description: >-
+        The namespaced name (namespace/name) of the previous successful Release prior to the one
+        passed as params.release
+    - name: collectorsResourceType
+      description: The type of resource that contains the collectors
+      type: string
+      default: releaseplan
+    - name: collectorsResource
+      description: |
+        The namespaced name of the resource that contains the collectors
+      type: string
+    - name: taskGitUrl
+      type: string
+      description: The url to the git repo where the release-service-catalog tasks to be used are stored
+      default: https://github.com/konflux-ci/release-service-catalog.git
+    - name: taskGitRevision
+      type: string
+      description: The revision in the taskGitUrl repo to be used
+  workspaces:
+    - name: release-workspace
+  tasks:
+    - name: hello
+      taskSpec:
+        steps:
+          - name: build
+            image: bash:3.2
+            script: |
+              echo "HELLO"
